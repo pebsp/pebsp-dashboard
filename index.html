@@ -3,60 +3,305 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PEBSP Dashboard</title>
+    <title>PEBSP Dashboard - Fluxo de Editais</title>
     <style>
-      body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-      .container { max-width: 1000px; margin: 0 auto; }
-      button { padding: 10px 20px; margin: 5px; background: #667eea; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
-      button:hover { background: #764ba2; }
-      .tab { display: none; background: white; padding: 20px; margin-top: 20px; border-radius: 5px; }
-      .tab.active { display: block; }
-      .card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; background: #fafafa; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 50px;
+      }
+
+      .header h1 {
+        font-size: 32px;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+
+      .header p {
+        font-size: 16px;
+        opacity: 0.9;
+      }
+
+      .timeline {
+        position: relative;
+        padding: 20px 0;
+      }
+
+      .stage {
+        margin-bottom: 60px;
+      }
+
+      .stage-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 15px;
+      }
+
+      .stage-icon {
+        width: 50px;
+        height: 50px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        flex-shrink: 0;
+      }
+
+      .stage-info h2 {
+        color: white;
+        font-size: 22px;
+        margin-bottom: 5px;
+      }
+
+      .stage-count {
+        color: rgba(255,255,255,0.8);
+        font-size: 14px;
+      }
+
+      .cards-container {
+        display: grid;
+        gap: 15px;
+        margin-left: 65px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border-left: 5px solid #667eea;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      }
+
+      .card.done {
+        border-left-color: #10b981;
+        opacity: 0.85;
+      }
+
+      .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 12px;
+        line-height: 1.4;
+      }
+
+      .card-info {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        font-size: 13px;
+        color: #666;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 12px;
+      }
+
+      .badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .badge-done {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+        font-size: 14px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: white;
+      }
+
+      .spinner {
+        border: 4px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>PEBSP Dashboard - Editais</h1>
-      <button onclick="show('p')">Pendentes</button>
-      <button onclick="show('d')">Processados</button>
-      <button onclick="show('o')">Inscrições Abertas</button>
+      <div class="header">
+        <h1>📋 PEBSP Dashboard</h1>
+        <p>Fluxo de Processamento de Editais</p>
+      </div>
 
-      <div id="p" class="tab active"><p>Carregando...</p></div>
-      <div id="d" class="tab"><p>Carregando...</p></div>
-      <div id="o" class="tab"><p>Carregando...</p></div>
+      <div class="timeline">
+        <div class="stage">
+          <div class="stage-header">
+            <div class="stage-icon">⏳</div>
+            <div class="stage-info">
+              <h2>Na Fila (Pendentes)</h2>
+              <div class="stage-count" id="pending-count">Carregando...</div>
+            </div>
+          </div>
+          <div class="cards-container" id="pending-cards">
+            <div class="loading">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="stage-header">
+            <div class="stage-icon">✅</div>
+            <div class="stage-info">
+              <h2>Processados</h2>
+              <div class="stage-count" id="done-count">Carregando...</div>
+            </div>
+          </div>
+          <div class="cards-container" id="done-cards">
+            <div class="loading">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-      function show(id) {
-        document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-      }
-
       const apiUrl = 'https://script.google.com/macros/s/AKfycbw2ImX5WCErtSAGkah1ZFiDpV8UOZAFxw6E_Mh7DV7oo5dHZuxMwFhnwFpSbsVl3SA/exec';
 
       fetch(apiUrl)
         .then(r => r.json())
         .then(data => {
-          let html1 = '';
-          if(data.pending) {
-            data.pending.forEach(e => {
-              html1 += '<div class="card"><strong>' + e.name + '</strong><br>Tamanho: ' + e.size + '<br>Data: ' + new Date(e.created).toLocaleDateString('pt-BR') + '</div>';
-            });
-          }
-          document.getElementById('p').innerHTML = html1 || '<p>Nenhum editais pendentes</p>';
+          renderStage('pending', data.pending || []);
+          renderStage('done', data.done || []);
+        })
+        .catch(e => {
+          document.getElementById('pending-cards').innerHTML = '<div class="empty-state">Erro ao carregar dados</div>';
+          document.getElementById('done-cards').innerHTML = '<div class="empty-state">Erro ao carregar dados</div>';
+        });
 
-        let html2 = '';
-        if(data.done) {
-          data.done.forEach(e => {
-            html2 += '<div class="card"><strong>' + e.name + '</strong><br>Tamanho: ' + e.size + '<br>Data: ' + new Date(e.created).toLocaleDateString('pt-BR') + '</div>';
-          });
+      function renderStage(stage, editais) {
+        const container = document.getElementById(stage + '-cards');
+        const countEl = document.getElementById(stage + '-count');
+
+        countEl.textContent = editais.length + ' edital' + (editais.length !== 1 ? 'is' : '');
+
+        if(editais.length === 0) {
+          container.innerHTML = '<div class="empty-state">Nenhum edital nesta fase</div>';
+          return;
         }
-        document.getElementById('d').innerHTML = html2 || '<p>Nenhum editais processados</p>';
-      })
-      .catch(e => {
-        document.getElementById('p').innerHTML = '<p style="color:red;">Erro: ' + e + '</p>';
-        document.getElementById('d').innerHTML = '<p style="color:red;">Erro: ' + e + '</p>';
-      });
+
+        const html = editais.map(e => {
+          const date = new Date(e.created).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📋 PEBSP Dashboard</h1>
+        <p>Fluxo de Processamento de Editais</p>
+      </div>
+
+      <div class="timeline">
+        <div class="stage">
+          <div class="stage-header">
+            <div class="stage-icon">⏳</div>
+            <div class="stage-info">
+              <h2>Na Fila (Pendentes)</h2>
+              <div class="stage-count" id="pending-count">Carregando...</div>
+            </div>
+          </div>
+          <div class="cards-container" id="pending-cards">
+            <div class="loading">
+
+              </div>
+            </div>
+            <span class="badge ${isProcessed ? 'badge-done' : 'badge-pending'}">
+              ${isProcessed ? '✓ Processado' : '⏳ Pendente'}
+            </span>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+    }
   </script>
 </body>
 </html>
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          const isProcessed = stage === 'done';
+          return `
+            <div class="card ${isProcessed ? 'done' : ''}">
+              <div class="card-title">${e.name}</div>
+              <div class="card-info">
+                <div class="info-item">
+                  <span class="info-label">Tamanho</span>
+                  <span>${(e.size / 1024 / 1024).toFixed(2)} MB</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Adicionado em</span>
+                  <span>${date}</span>
+                </div>
+              </div>
