@@ -1,126 +1,31 @@
- <!DOCTYPE html>
-  <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PEBSP Dashboard</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
-      .container { max-width: 900px; margin: 0 auto; }
-      .header { text-align: center; color: white; margin-bottom: 50px; }
-      .header h1 { font-size: 32px; margin-bottom: 10px; }
-      .header p { font-size: 16px; opacity: 0.9; }
-      .stage { margin-bottom: 60px; }
-      .stage-header { display: flex; align-items: center; margin-bottom: 30px; gap: 15px; }
-      .stage-icon { width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-      .stage-info h2 { color: white; font-size: 22px; margin-bottom: 5px; }
-      .stage-count { color: rgba(255,255,255,0.8); font-size: 14px; }
-      .cards-container { display: grid; gap: 15px; margin-left: 65px; }
-      .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 5px solid #667eea; transition: all 0.3s ease; }
-      .card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-      .card.done { border-left-color: #10b981; opacity: 0.85; }
-      .card-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 12px; }
-      .card-info { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; font-size: 13px; color: #666; }
-      .info-item { display: flex; flex-direction: column; gap: 4px; }
-      .info-label { font-weight: 600; color: #999; text-transform: uppercase; font-size: 11px; }
-      .badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 12px; }
-      .badge-pending { background: #fef3c7; color: #92400e; }
-      .badge-done { background: #d1fae5; color: #065f46; }
-      .empty-state { text-align: center; padding: 40px 20px; color: #999; font-size: 14px; }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1>PEBSP Dashboard</h1>
-        <p>Fluxo de Processamento de Editais</p>
-      </div>
+<!DOCTYPE html>
+<html>
+<head>
+<title>PEBSP Dashboard</title>
+<style>
+body { font-family: Arial; background: linear-gradient(135deg, #667eea, #764ba2); padding: 40px; color: white; }
+.card { background: white; color: #333; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #667eea; }
+.done { border-left-color: #10b981; opacity: 0.8; }
+h1 { text-align: center; }
+h2 { margin-top: 30px; }
+</style>
+</head>
+<body>
+<h1>PEBSP Dashboard</h1>
 
-      <div class="timeline">
-        <div class="stage">
-          <div class="stage-header">
-            <div class="stage-icon">⏳</div>
-            <div class="stage-info">
-              <h2>Na Fila (Pendentes)</h2>
-              <div class="stage-count" id="pc">Carregando...</div>
-            </div>
-          </div>
-          <div id="pc-cards"></div>
-        </div>
+<h2>Pendentes</h2>
+<div id="pending"></div>
 
-        <div class="stage">
-          <div class="stage-header">
-            <div class="stage-icon">✅</div>
-            <div class="stage-info">
-              <h2>Processados</h2>
-              <div class="stage-count" id="dc">Carregando...</div>
-            </div>
-          </div>
-          <div id="dc-cards"></div>
-        </div>
-      </div>
-    </div>
+<h2>Processados</h2>
+<div id="done"></div>
 
-    <script>
-      var apiUrl = 'https://script.google.com/macros/s/AKfycbw2ImX5WCErtSAGkah1ZFiDpV8UOZAFxw6E_Mh7DV7oo5dHZuxMwFhnwFpSbsVl3SA/exec';
-
-      fetch(apiUrl).then(function(r) { return r.json(); }).then(function(data) {
-        render('p', data.pending || []);
-        render('d', data.done || []);
-      });
-
-      function render(type, editais) {
-        var countEl = document.getElementById(type + 'c');
-        var cardsEl = document.getElementById(type + 'c-cards');
-        countEl.textContent = editais.length + ' edital' + (editais.length !== 1 ? 'is' : '');
-
-        if(editais.length === 0) {
-          cardsEl.innerHTML = '<div class="empty-state">Nenhum edital</div>';
-          return;
-        render('p', data.pending || []);
-        render('d', data.done || []);
-      });
-
-      function render(type, editais) {
-        var countEl = document.getElementById(type + 'c');
-        var cardsEl = document.getElementById(type + 'c-cards');
-        countEl.textContent = editais.length + ' edital' + (editais.length !== 1 ? 'is' : '');
-
-        if(editais.length === 0) {
-          cardsEl.innerHTML = '<div class="empty-state">Nenhum edital</div>';
-          return;
-        }
-
-        var html = '';
-        for(var i = 0; i < editais.length; i++) {
-          var e = editais[i];
-          var date = new Date(e.created).toLocaleDateString('pt-BR');
-          var size = (e.size / 1024 / 1024).toFixed(2);
-          var isDone = type === 'd';
-          var badge = isDone ? 'badge-done' : 'badge-pending';
-
-
-        html += '<div class="cards-container"><div class="card ' + (isDone ? 'done' : '') + '">';
-        html += '<div class="card-title">' + e.name + '</div>';
-        html += '<div class="card-info">';
-        html += '<div class="info-item"><span class="info-label">Tamanho</span><span>' + size + ' MB</span></div>';
-        html += '<div class="info-item"><span class="info-label">Data</span><span>' + date + '</span></div>';
-        html += '</div>';
-        html += '<span class="badge ' + badge + '">' + text + '</span>';
-        html += '</div></div>';
-      }
-
-      cardsEl.innerHTML = html;
-    }
-  </script>
+<script>
+fetch('https://script.google.com/macros/s/AKfycbw2ImX5WCErtSAGkah1ZFiDpV8UOZAFxw6E_Mh7DV7oo5dHZuxMwFhnwFpSbsVl3SA/exec')
+.then(r => r.json())
+.then(data => {
+  document.getElementById('pending').innerHTML = data.pending.map(e => '<div class="card">' + e.name + ' - ' + (e.size/1024/1024).toFixed(2) + ' MB</div>').join('');
+  document.getElementById('done').innerHTML = data.done.map(e => '<div class="card done">' + e.name + ' - ' + (e.size/1024/1024).toFixed(2) + ' MB</div>').join('');
+});
+</script>
 </body>
 </html>
-          html += '<div class="card-title">' + e.name + '</div>';
-          html += '<div class="card-info">';
-          html += '<div class="info-item"><span class="info-label">Tamanho</span><span>' + size + ' MB</span></div>';
-          html += '<div class="info-item"><span class="info-label">Data</span><span>' + date + '</span></div>';
-          html += '</div>';
-          html += '<span class="badge ' + badge + '">' + text + '</span>';
-          html += '</div></div>';
-        }
