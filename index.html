@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEBSP Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    button { padding: 10px 20px; margin: 5px; background: #667eea; color: white; border: none; cursor: pointer; border-radius: 5px; }
+    button:hover { background: #764ba2; }
+    .tab { display: none; background: white;20px; border-radius: 5px; }
+    button:hover { background: #764ba2; }
+    .tab { display: none; background: white; padding: 20px; margin-top: 20px; border-radius: 5px; }
+    .tab.active { display: block; }
+    .card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📋 PEBSP Dashboard - Editais</h1>
+    <button onclick="show('p')">Pendentes</button>
+    <button onclick="show('d')">Processados</button>
+    <button onclick="show('o')">Inscrições Abertas</button>
+
+    <div id="p" class="tab active"><p>Carregando...</p></div>
+    <div id="d" class="tab"><p>Carregando...
+    <div id="o" class="tab"><p>Carregando...
+  </div>
+
+  <script>
+    function show(id) {
+      document.querySelectorAll('.tab').forE'active'));
+      document.getElementById(id).classList.
+    }
+
+    const apiUrl =
+'https://script.google.com/macros/s/AKfycbw2xw6E_Mh7DV7oo5dHZuxMwFhnwFpSbsVl3SA/exec';
+    const wpUrl = 'https://www.pebsp.com/wp-json/wp/v2/pages/48544';
+
+    fetch(apiUrl)
+      .then(r => r.json())
+      .then(data => {
+        let pending = '';
+        if(data.pending) data.pending.forEach(e => {
+          pending += '<div class="card"><strbr>Tamanho: ' + e.size + '</div>';
+        });
+        document.getElementById('p').innerHTML = pending;
+
+        let done = '';
+        if(data.done) data.done.forEach(e => {
+          done += '<div class="card"><strongTamanho: ' + e.size + '</div>';
+        });
+        document.getElementById('d').innerHTML = done;
+      });
+
+    fetch(wpUrl)
+      .then(r => r.json())
+      .then(p => {
+        document.getElementById('o').innerHTed + '</h2><p>Veja a página do site para maisinformações.</p>';
+      });
+  </script>
+</body>
+</html>
