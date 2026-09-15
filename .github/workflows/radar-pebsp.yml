@@ -36,7 +36,9 @@ jobs:
             hour12: false
           }).format(now));
 
-          const periodo = brHour < 13 ? "manha" : "tarde";
+          const periodo = process.env.GITHUB_EVENT_NAME === "workflow_dispatch"
+  ? "extra"
+  : brHour < 13 ? "manha" : "tarde";
           const recebidoEm = new Intl.DateTimeFormat("pt-BR", {
             timeZone: "America/Sao_Paulo"
           }).format(now);
