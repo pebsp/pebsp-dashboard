@@ -27,7 +27,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           node <<'NODE'
-          const fs = require("fs");
+          import fs from "node:fs";
 
           const now = new Date();
           const brHour = Number(new Intl.DateTimeFormat("en-US", {
