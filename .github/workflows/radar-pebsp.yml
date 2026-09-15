@@ -30,15 +30,20 @@ jobs:
           import fs from "node:fs";
 
           const now = new Date();
-          const brHour = Number(new Intl.DateTimeFormat("en-US", {
-            timeZone: "America/Sao_Paulo",
-            hour: "2-digit",
-            hour12: false
-          }).format(now));
 
-          const periodo = process.env.GITHUB_EVENT_NAME === "workflow_dispatch"
-  ? "extra"
-  : brHour < 13 ? "manha" : "tarde";
+          const brHour = Number(
+            new Intl.DateTimeFormat("en-US", {
+              timeZone: "America/Sao_Paulo",
+              hour: "2-digit",
+              hour12: false
+            }).format(now)
+          );
+
+          const periodo =
+            process.env.GITHUB_EVENT_NAME === "workflow_dispatch"
+              ? "extra"
+              : (brHour < 13 ? "manha" : "tarde");
+
           const recebidoEm = new Intl.DateTimeFormat("pt-BR", {
             timeZone: "America/Sao_Paulo"
           }).format(now);
@@ -47,6 +52,7 @@ jobs:
 
           const prompt = `
           Você é o Radar Editorial do portal PEBSP, em português do Brasil.
+
           Faça uma busca atualizada na web por pautas educacionais brasileiras publicadas ou atualizadas recentemente.
 
           Procure oportunidades e notícias com alto potencial editorial:
@@ -59,6 +65,7 @@ jobs:
           Escolha no máximo 12 pautas realmente úteis e novas.
 
           Devolva SOMENTE JSON válido, sem markdown, neste formato:
+
           {
             "pautas": [
               {
@@ -93,44 +100,71 @@ jobs:
           });
 
           if (!response.ok) {
-            throw new Error(`Erro da OpenAI: ${response.status} ${await response.text()}`);
+            throw new Error(
+              `Erro da OpenAI: ${response.status} ${await response.text()}`
+            );
           }
 
           const result = await response.json();
-          let text = result.output_text ||
-            result.output?.flatMap(item => item.content || [])
-              .filter(item => item.type === "output_text")
-              .map(item => item.text)
-              .join("") || "";
 
-          text = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "");
+          let text =
+            result.output_text ||
+            result.output
+              ?.flatMap((item) => item.content || [])
+              .filter((item) => item.type === "output_text")
+              .map((item) => item.text)
+              .join("") ||
+            "";
+
+          text = text
+            .replace(/^```json\s*/i, "")
+            .replace(/^```\s*/i, "")
+            .replace(/\s*```$/i, "");
+
           const parsed = JSON.parse(text);
 
-          const prioridades = new Set(["urgent", "high", "medium", "evergreen"]);
+          const prioridades = new Set([
+            "urgent",
+            "high",
+            "medium",
+            "evergreen"
+          ]);
 
-          const pautas = (parsed.pautas || []).slice(0, 12).map((pauta, index) => ({
-            id: `radar-${dataId}-${periodo}-${String(index + 1).padStart(2, "0")}`,
-            title: String(pauta.title || "Pauta sem título"),
-            institution: String(pauta.institution || "Fonte oficial"),
-            category: String(pauta.category || "Educação"),
-            deadline: String(pauta.deadline || "Sem prazo informado"),
-            priority: prioridades.has(pauta.priority) ? pauta.priority : "high",
-            score: Math.max(0, Math.min(10, Number(pauta.score) || 8)),
-            status: "Nova",
-            vagas: String(pauta.vagas || "—"),
-            summary: String(pauta.summary || ""),
-            reason: String(pauta.reason || ""),
-            url: String(pauta.url || ""),
-            receivedAt: recebidoEm,
-            radarPeriod: periodo
-          }));
+          const pautas = (parsed.pautas || [])
+            .slice(0, 12)
+            .map((pauta, index) => ({
+              id: `radar-${dataId}-${periodo}-${String(index + 1).padStart(2, "0")}`,
+              title: String(pauta.title || "Pauta sem título"),
+              institution: String(pauta.institution || "Fonte oficial"),
+              category: String(pauta.category || "Educação"),
+              deadline: String(pauta.deadline || "Sem prazo informado"),
+              priority: prioridades.has(pauta.priority)
+                ? pauta.priority
+                : "high",
+              score: Math.max(0, Math.min(10, Number(pauta.score) || 8)),
+              status: "Nova",
+              vagas: String(pauta.vagas || "—"),
+              summary: String(pauta.summary || ""),
+              reason: String(pauta.reason || ""),
+              url: String(pauta.url || ""),
+              receivedAt: recebidoEm,
+              radarPeriod: periodo
+            }));
 
           fs.mkdirSync("data", { recursive: true });
-          fs.writeFileSync("data/radar.json", JSON.stringify({
-            updatedAt: now.toISOString(),
-            radarPeriod: periodo,
-            pautas
-          }, null, 2));
+
+          fs.writeFileSync(
+            "data/radar.json",
+            JSON.stringify(
+              {
+                updatedAt: now.toISOString(),
+                radarPeriod: periodo,
+                pautas
+              },
+              null,
+              2
+            )
+          );
           NODE
 
       - name: Salvar radar no repositório
